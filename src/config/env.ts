@@ -6,21 +6,30 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'staging']).default('development'),
   PORT: z.string().default('3000'),
+  HOST: z.string().default('localhost'),
   JWT_SECRET: z.string(),
   JWT_EXPIREIN: z.string().default('1d'),
   DB_HOST: z.string(),
-  DB_PORT: z.string(),
+  DB_PORT: z.string().transform(Number),
   DB_USERNAME: z.string(),
   DB_PASSWORD: z.string(),
   DB_DATABASE: z.string(),
 });
 
-const env = envSchema.parse(process.env);
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.log('❌ Invalid environment variables:', parsed.error!.issues);
+  process.exit(1);
+}
+
+const env = parsed.data;
 
 const configSchema = z.object({
   app: z.object({
     env: z.string(),
     port: z.union([z.string(), z.number()]),
+    host: z.string(),
     isProd: z.boolean(),
     isDev: z.boolean(),
     isStag: z.boolean(),
@@ -31,16 +40,18 @@ const configSchema = z.object({
   }),
   db: z.object({
     host: z.string(),
-    port: z.string(),
+    port: z.number(),
     username: z.string(),
     password: z.string(),
     database: z.string(),
+    synchronize: z.boolean().default(false),
   }),
 });
 
-const EnvConfig: z.infer<typeof configSchema> = configSchema.parse({
+export const EnvConfig: z.infer<typeof configSchema> = configSchema.parse({
   app: {
     env: env.NODE_ENV,
+    host: env.HOST,
     port: env.PORT,
     isProd: env.NODE_ENV === 'production',
     isDev: env.NODE_ENV === 'development',
@@ -56,7 +67,6 @@ const EnvConfig: z.infer<typeof configSchema> = configSchema.parse({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
+    synchronize: false
   },
 });
-
-export default EnvConfig as z.infer<typeof configSchema>;
