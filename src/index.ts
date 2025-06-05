@@ -1,30 +1,52 @@
-import app from './app'; // Import the app from './app'
-import { Server } from 'http'; // Import http for server instance
+import { Server } from 'http';
+import { EnvConfig } from '@config';
+import logger from '@utils/logger';
+import app from '@src/app';
 
-const port = parseInt(process.env.PORT || '3000'); // Define a port number (e.g., 3000)
+let server: Server;
 
-// Start the server by calling app.listen() and store the result
-const server: Server = app.listen(port, () => {
-  console.log(`Server listening on port ${port}`); // Log a message indicating the server is running
-});
-
-// Implement graceful shutdown:
-const shutdown = (signal: string) => {
-  console.log(`Received ${signal}. Shutting down gracefully...`); // Log a shutdown message
-
-  // TODO: Add database connection closing logic here
-
-  server.close(() => {
-    console.log('HTTP server closed.'); // In the server.close() callback, log a message
-    process.exit(0); // Exit the process with status code 0
-  });
-
-  // Add a timeout for forceful shutdown
-  setTimeout(() => {
-    console.error('Could not close server in time, forcefully shutting down');
+const startServer = (): void => {
+  try {
+    server = app.listen(EnvConfig.app.port, () => {
+      logger.info('SERVER_STARTED');
+    });
+  } catch (error) {
+    logger.error({ name: 'SERVER_START_FAILED', data: { error } });
     process.exit(1);
-  }, 10000); // 10 seconds timeout
+  }
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM')); // Listen for 'SIGTERM' process signals
-process.on('SIGINT', () => shutdown('SIGINT')); // Listen for 'SIGINT' process signals
+const shutdown = (signal: string): void => {
+  logger.error({ name: 'SHUTDOWN_SIGNAL_RECEIVED', data: { signal } });
+
+  server.close(() => {
+    logger.info('SERVER_CLOSED');
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    logger.error('FORCEFUL_SHUTDOWN_TIMEOUT');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('uncaughtException', (error) => {
+  logger.error({ name: 'UNCAUGHT_EXCEPTION', data: { error } });
+  shutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ name: 'UNHANDLED_REJECTION', data: { reason } });
+  shutdown('unhandledRejection');
+});
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+if (process.listenerCount('exit') === 0) {
+  process.on('exit', (code) => {
+    logger.error({ name: 'PROCESS_EXIT', data: { code } });
+  });
+}
+
+startServer();

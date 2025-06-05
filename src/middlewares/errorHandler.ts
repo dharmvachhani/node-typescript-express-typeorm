@@ -1,13 +1,27 @@
-import type { ErrorRequestHandler, RequestHandler } from "express";
-import { StatusCodes } from "http-status-codes";
+import type { Request, Response, ErrorRequestHandler, RequestHandler } from "express";
+import { generateError } from "@utils/error";
+import { sendResponse } from "@utils/response";
 
-const unexpectedRequest: RequestHandler = (_req, res) => {
-	res.status(StatusCodes.NOT_FOUND).send("Not Found");
+const notFoundRequest: RequestHandler = (req: Request, res: Response) => {
+	return sendResponse({
+		res,
+		success: false,
+		message: "The endpoint you are trying to access does not exist.",
+		statusCode: 404,
+	});
 };
 
-const addErrorToRequestLog: ErrorRequestHandler = (err, _req, res, next) => {
-	res.locals.err = err;
-	next(err);
+export const globalErrorHandler: ErrorRequestHandler = (err, _req: Request, res: Response) => {
+	const error = generateError("GLOBAL_EXCEPTION", err)
+
+	res.locals.error = error;
+
+	return sendResponse({
+		res,
+		success: false,
+		message: error.message,
+		statusCode: error.status,
+	});
 };
 
-export default (): [RequestHandler, ErrorRequestHandler] => [unexpectedRequest, addErrorToRequestLog];
+export const errorHandler: [RequestHandler, ErrorRequestHandler] = [notFoundRequest, globalErrorHandler];

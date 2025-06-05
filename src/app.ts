@@ -1,39 +1,46 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { initializeDatabase } from '@database/index';
-import mainRouter from '@router/index';
-import rateLimiter from '@middlewares/rateLimiter';
-import errorHandler from '@middlewares/errorHandler';
-import { xssSanitizer } from '@middlewares/xssSanitizer';
+import cors from 'cors';
+import express from 'express';
 import expressStatusMonitor from 'express-status-monitor';
+import helmet from 'helmet';
 import { EnvConfig } from '@config';
+import { initializeDatabase } from '@database/index';
+import { errorHandler } from '@middlewares/errorHandler';
+import rateLimiter from '@middlewares/rateLimiter';
+import requestLogger from '@middlewares/requestLogger';
+import { xssSanitizer } from '@middlewares/xssSanitizer';
+import mainRouter from '@router/index';
 
-// Initialize database
+
 initializeDatabase();
 
 const app = express();
-app.use(cors());
+
 app.use(helmet());
-app.use(xssSanitizer)
+app.use(cors());
+app.use(xssSanitizer);
 app.use(rateLimiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
 app.use(
   expressStatusMonitor({
     title: 'Server Health',
-    healthChecks: [{ protocol: 'http', host: EnvConfig.app.host, port: EnvConfig.app.port, path: '/health' }],
+    healthChecks: [
+      {
+        protocol: 'http',
+        host: EnvConfig.app.host,
+        port: EnvConfig.app.port,
+        path: '/health'
+      }
+    ]
   })
 );
 
-// Use main router
+app.use(requestLogger);
 app.use('/', mainRouter);
-
-
-
-// Error handling middleware
-app.use(errorHandler())
+app.use(errorHandler);
 
 export default app;

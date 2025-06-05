@@ -19,20 +19,20 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.log('❌ Invalid environment variables:', parsed.error!.issues);
+  console.error('❌ Invalid environment variables:', parsed.error.format());
   process.exit(1);
 }
 
 const env = parsed.data;
 
 const configSchema = z.object({
+  isProd: z.boolean(),
+  isDev: z.boolean(),
+  isStag: z.boolean(),
   app: z.object({
     env: z.string(),
     port: z.union([z.string(), z.number()]),
     host: z.string(),
-    isProd: z.boolean(),
-    isDev: z.boolean(),
-    isStag: z.boolean(),
   }),
   jwt: z.object({
     secret: z.string(),
@@ -49,13 +49,13 @@ const configSchema = z.object({
 });
 
 export const EnvConfig: z.infer<typeof configSchema> = configSchema.parse({
+  isProd: env.NODE_ENV === 'production',
+  isDev: env.NODE_ENV === 'development',
+  isStag: env.NODE_ENV === 'staging',
   app: {
     env: env.NODE_ENV,
     host: env.HOST,
     port: env.PORT,
-    isProd: env.NODE_ENV === 'production',
-    isDev: env.NODE_ENV === 'development',
-    isStag: env.NODE_ENV === 'staging',
   },
   jwt: {
     secret: env.JWT_SECRET,

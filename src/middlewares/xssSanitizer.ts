@@ -19,7 +19,7 @@ function sanitize<T = any>(input: T): T {
   return input;
 }
 
-export const xssSanitizer = (req: Request, res: Response, next: NextFunction) => {
+export const xssSanitizer = (req: Request, _res: Response, next: NextFunction): void => {
   req.body = sanitize(req.body);
   req.query = sanitize(req.query);
   req.params = sanitize(req.params);

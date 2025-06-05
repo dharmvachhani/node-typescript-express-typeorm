@@ -10,14 +10,15 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "src",
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "useUnknownInCatchVariables": true,
     "noUncheckedIndexedAccess": true,
-    "baseUrl": "./src/",
+    "baseUrl": "src",
     "paths": {
+      "@common/*": ["common/*"],
       "@config": ["config/index.ts"],
       "@config/*": ["config/*"],
       "@constants/*": ["constants/*"],
@@ -26,7 +27,8 @@
       "@modules/*": ["modules/*"],
       "@providers/*": ["providers/*"],
       "@router/*": ["router/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@src/*": ["*"]
     }
   },
   "include": ["src/**/*.ts"],

@@ -1,10 +1,12 @@
+import { handleError } from '@utils/error';
+import logger from '@utils/logger';
 import { AppDataSource } from './datasource';
 
 export async function initializeDatabase(): Promise<void> {
   try {
     await AppDataSource.initialize();
-    console.log('Database connection initialized successfully');
+    logger.info('DB_INITIALIZED');
   } catch (error) {
-    console.error('Error during database initialization:', error);
+    handleError('DB_INITIALIZATION_ERROR', error)
   }
 }

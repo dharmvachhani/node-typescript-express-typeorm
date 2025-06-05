@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
     password: EnvConfig.db.password,
     database: EnvConfig.db.database,
     synchronize: EnvConfig.db.synchronize,
-    logging: !EnvConfig.app.isProd,
+    logging: false,
     entities: ["./**/*.entity.ts"],
     migrations: ["./migrations"],
     subscribers: [],
