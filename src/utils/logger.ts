@@ -5,7 +5,6 @@ import { Context } from '@utils/context';
 import { isEmptyObject } from '@utils/helpers';
 // import LogService from './logService';
 
-
 class DBTransport extends Transport {
   override log(info: any, callback: () => void): void {
     setImmediate(() => this.emit('logged', info));
@@ -39,7 +38,6 @@ const transports: winston.transport[] = [
 if (EnvConfig.isProd) {
   transports.push(new DBTransport());
 }
-
 
 const baseLogger = winston.createLogger({
   level: 'info',

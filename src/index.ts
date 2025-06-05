@@ -43,10 +43,8 @@ process.on('unhandledRejection', (reason) => {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-if (process.listenerCount('exit') === 0) {
-  process.on('exit', (code) => {
-    logger.error({ name: 'PROCESS_EXIT', data: { code } });
-  });
-}
+process.on('exit', (code) => {
+  logger.error({ name: 'PROCESS_EXIT', data: { code } });
+});
 
 startServer();
