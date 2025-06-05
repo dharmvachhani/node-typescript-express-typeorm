@@ -9,7 +9,7 @@ export default [
     languageOptions: {
       parser: eslintParserTs,
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: process.cwd(),
         ecmaVersion: 'latest',
         sourceType: 'module',
