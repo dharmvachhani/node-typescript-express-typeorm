@@ -16,6 +16,8 @@
     "noImplicitOverride": true,
     "useUnknownInCatchVariables": true,
     "noUncheckedIndexedAccess": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "baseUrl": "src",
     "paths": {
       "@common/*": ["common/*"],
